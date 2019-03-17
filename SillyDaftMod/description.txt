@@ -1,0 +1,1 @@
+This mod demonstrates some of Shop Expander's cross mod functionality. It is not meant for "general consumption".

@@ -1,0 +1,8 @@
+author = DRKV
+version = 0.1
+displayName = Silly Daft Mod (Shop Expander Demo)
+includePDB = false
+buildIgnore = .gitignore, .gitattributes, *.csproj*, *.sln, *.targets, .git/*, .vs/*, bin/*, obj/*, *.xcf, lib/ReLogic.dll
+hideCode = false
+hideResources = false
+includeSource = true
