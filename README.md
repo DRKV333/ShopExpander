@@ -16,6 +16,8 @@ Shop Expander overrides `NPCLoader.SetupShop` to change how shops are created. T
 
 Shop Expander overrides `Chest.AddShop`, which is responsible for inserting items for buyback into an open shop. Every `ShoppingList` has a 38 slot page for storing these items, but the page is not displayed while empty.
 
+The page selection buttons are created by adding two new items into the game. The left and right click events for these items are hooked via patches to `ItemSlot.LeftClick` and `ItemSlot.RightClick`.
+
 ## Limitations
 
 There is obviously no way to know how a mod may choose to interact with a shop inventory. As long as the mod only modifies the shop as outlined on the [tModLoader documentation](http://blushiemagic.github.io/tModLoader/html/class_terraria_1_1_mod_loader_1_1_global_n_p_c.html#a5fd0754440bfc039de5425b200c202a1), this approach will work without issues.
@@ -24,16 +26,16 @@ There is obviously no way to know how a mod may choose to interact with a shop i
 
 Some mods however might wish to modify or remove existing items in a shop. This wont be possible in the default case, but it can be done using Shop Expander's `Mod.Call` API. This use case seems to be rare enough, so this shouldn't effect many mods. Since mods can't assume the load order of Setup Shop hooks, without using more advanced tricks, in vanilla tModLoader it's only possible to modify vanilla shop items. Shop Expander makes this easier as well.
 
-By default each mod is given a 40 slot chest for it's items. Since this is the size of full vanilla shop, it should be more than enough. None the less, it's possible to request a larger inventory.
+By default each mod is given a 40 slot chest for it's items. Since this is the size of a full vanilla shop, it should be more than enough. None the less, it's possible to request a larger inventory.
 
-## `Mod.Call`
+## Mod.Call
 
 Shop expander provides some functions through `Mod.Call` that you can use in your mod without needing to add a reference to it.
 
 | Call template | Effect |
 | --- | --- |
 | `Mod.Call("SetProvisionSize", object obj, int size);` | Returns `null`. `obj` should be an instance of `ModNPC` or `GlobalNPC`. Changes the size of the inventory given to `obj` to `size`. The default value is `40`. |
-| `Mod.Call("SetModifier", object obj);` | Returns `null`. `obj` should be an instance of `GlobalNPC`. Specifies, that `obj` wishes to modify existing items in a shop and won't add any new ones. `obj.SetupShop` will only be called once every other non-modifier object is processed. instead of a new empty inventory, it will receive the full contents of the Extended shop. `nextSlot` will be set to the length of this shop.
+| `Mod.Call("SetModifier", object obj);` | Returns `null`. `obj` should be an instance of `GlobalNPC`. Specifies, that `obj` wishes to modify existing items in a shop and won't add any new ones. `obj.SetupShop` will only be called once every other non-modifier object is processed. Instead of a new empty inventory, it will receive the full contents of the Extended shop. `nextSlot` will be set to the length of this shop.
 | `Mod.Call("SetNoDistinct", object obj);` | Returns `null`. `obj` should be an instance of `ModNPC` or `GlobalNPC`. Every item provided by `obj` will be added to the Expanded shop, even if it already contains one of the same type. This may be useful, if a mod wishes to add items to a shop that have the same type, but different `ModItem` extra data.
 | `Mod.Call("GetLastShopExpanded");` | Returns the full contents of the last opened shop as an `Item[]`. May return `null` if no shop has been opened yet. |
 
