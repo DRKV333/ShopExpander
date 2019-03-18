@@ -4,7 +4,7 @@ Shop expander aims to solve a problem encountered by many players using multiple
 
 This mod solves the problem, by modifying tModLoader's shop setup process. It provides each mod with a new empty inventory to put items in, then combines the inventories. This new Expanded shop is then divided into pages for displaying. As a bonus, you also get a full 28 slot empty page for the buyback buffer.
 
-For more game-play info visit the mod's home page on the Terraria Forums: {{INSERT LINK HERE}}
+For more game-play info visit the mod's home page on the Terraria Forums: https://forums.terraria.org/index.php?threads/shop-expander.78272/
 
 ## How it works
 

@@ -6,3 +6,4 @@ buildIgnore = .gitignore, .gitattributes, *.csproj*, *.sln, *.targets, .git/*, .
 hideCode = false
 hideResources = false
 includeSource = true
+homepage = https://forums.terraria.org/index.php?threads/shop-expander.78272/
