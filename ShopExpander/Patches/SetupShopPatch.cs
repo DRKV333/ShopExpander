@@ -1,4 +1,6 @@
 ﻿using Harmony;
+using Microsoft.Xna.Framework;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Terraria;
@@ -44,8 +46,15 @@ namespace ShopExpander.Patches
                 ModNPC npc = NPCLoader.GetNPC(type);
                 if (npc != null)
                 {
-                    int zero = 0;
-                    npc.SetupShop(ProvisionChest(list, npc), ref zero);
+                    try
+                    {
+                        int zero = 0;
+                        npc.SetupShop(ProvisionChest(list, npc), ref zero);
+                    }
+                    catch (Exception e)
+                    {
+                        LogAndPrint("ModNPC", npc.mod, npc, e);
+                    }
                 }
             }
             foreach (GlobalNPC globalNPC in arr)
@@ -56,8 +65,15 @@ namespace ShopExpander.Patches
                 }
                 else
                 {
-                    int zero = 0;
-                    globalNPC.SetupShop(type, ProvisionChest(list, globalNPC), ref zero);
+                    try
+                    {
+                        int zero = 0;
+                        globalNPC.SetupShop(type, ProvisionChest(list, globalNPC), ref zero);
+                    }
+                    catch (Exception e)
+                    {
+                        LogAndPrint("GlobalNPC", globalNPC.mod, globalNPC, e);
+                    }
                 }
             }
 
@@ -65,8 +81,15 @@ namespace ShopExpander.Patches
 
             foreach (var item in modifiers)
             {
-                int max = list.ExtendedItems.Length;
-                item.SetupShop(type, MakeFakeChest(list.ExtendedItems), ref max);
+                try
+                {
+                    int max = list.ExtendedItems.Length;
+                    item.SetupShop(type, MakeFakeChest(list.ExtendedItems), ref max);
+                }
+                catch (Exception e)
+                {
+                    LogAndPrint("modifier GlobalNPC", item.mod, item, e);
+                }
             }
 
             return false;
@@ -82,6 +105,24 @@ namespace ShopExpander.Patches
         private static Chest ProvisionChest(ShoppingList list, object target)
         {
             return MakeFakeChest(list.Provision(ShopExpander.Instance.ProvisionOverrides.GetValue(target), ShopExpander.Instance.NoDistinctOverrides.GetValue(target)));
+        }
+
+        private static void LogAndPrint(string type, Mod mod, object obj, Exception e)
+        {
+            if (ShopExpander.Instance.IgnoreErrors.GetValue(obj))
+                return;
+            ShopExpander.Instance.IgnoreErrors.SetValue(obj, true);
+
+            string modName = "N/A";
+            if (mod != null && mod.DisplayName != null)
+                modName = mod.DisplayName;
+            string message = string.Format("Shop Expander failed to load {0} from mod {1}.", type, modName);
+            Main.NewText(message, Color.Red);
+            Main.NewText("See log for more info. If this error persists, lease consider reporting it.", Color.Red);
+            ErrorLogger.Log("--- SHOP EXPANDER ERROR ---");
+            ErrorLogger.Log(message);
+            ErrorLogger.Log(e.ToString());
+            ErrorLogger.Log("--- END SHOP EXPANDER ERROR ---");
         }
     }
 }

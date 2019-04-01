@@ -22,6 +22,7 @@ namespace ShopExpander
         public readonly LazyObjectConfig<int> ProvisionOverrides = new LazyObjectConfig<int>(40);
         public readonly LazyObjectConfig<bool> ModifierOverrides = new LazyObjectConfig<bool>(false);
         public readonly LazyObjectConfig<bool> NoDistinctOverrides = new LazyObjectConfig<bool>(false);
+        public readonly LazyObjectConfig<bool> IgnoreErrors = new LazyObjectConfig<bool>(false);
 
         private bool textureSetupDone = false;
 
