@@ -23,6 +23,8 @@ namespace ShopExpander
         private readonly HashSet<object> modifierOverrides = new HashSet<object>();
         private readonly HashSet<object> noDistinctOverrides = new HashSet<object>();
 
+        private bool textureSetupDone = false;
+
         public ShopExpander()
         {
             Properties = new ModProperties { Autoload = false };
@@ -56,6 +58,7 @@ namespace ShopExpander
             {
                 Main.itemTexture[ArrowLeft.item.type] = CropTexture(Main.textGlyphTexture[0], new Rectangle(4 * 28, 0, 28, 28));
                 Main.itemTexture[ArrowRight.item.type] = CropTexture(Main.textGlyphTexture[0], new Rectangle(5 * 28, 0, 28, 28));
+                textureSetupDone = true;
             }
         }
 
@@ -64,7 +67,7 @@ namespace ShopExpander
             Patches.SetupShopPatch.Unload();
             harmonyInstance.UnpatchAll();
 
-            if (!Main.dedServ)
+            if (textureSetupDone)
             {
                 Main.itemTexture[ArrowLeft.item.type].Dispose();
                 Main.itemTexture[ArrowRight.item.type].Dispose();
