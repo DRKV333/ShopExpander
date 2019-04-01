@@ -63,6 +63,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ArrowItem.cs" />
+    <Compile Include="LazyObjectConfig.cs" />
     <Compile Include="Patches\AddShopPatch.cs" />
     <Compile Include="Patches\LeftRightClickPatch.cs" />
     <Compile Include="Patches\SetupShopPatch.cs" />

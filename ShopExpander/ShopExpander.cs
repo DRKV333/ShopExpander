@@ -19,9 +19,9 @@ namespace ShopExpander
 
         private HarmonyInstance harmonyInstance;
 
-        private readonly Dictionary<object, int> provisionOverrides = new Dictionary<object, int>();
-        private readonly HashSet<object> modifierOverrides = new HashSet<object>();
-        private readonly HashSet<object> noDistinctOverrides = new HashSet<object>();
+        public readonly LazyObjectConfig<int> ProvisionOverrides = new LazyObjectConfig<int>(40);
+        public readonly LazyObjectConfig<bool> ModifierOverrides = new LazyObjectConfig<bool>(false);
+        public readonly LazyObjectConfig<bool> NoDistinctOverrides = new LazyObjectConfig<bool>(false);
 
         private bool textureSetupDone = false;
 
@@ -87,15 +87,15 @@ namespace ShopExpander
                 case "SetProvisionSize":
                     if (!(args[2] is int))
                         throw new ArgumentException("Third argument must be int for SetProvisionSize");
-                    SetProvisionSize(args[1], (int)args[2]);
+                    ProvisionOverrides.SetValue(args[1], (int)args[2]);
                     break;
 
                 case "SetModifier":
-                    SetModifier(args[1]);
+                    ModifierOverrides.SetValue(args[1], true);
                     break;
 
                 case "SetNoDistinct":
-                    SetNoDistinct(args[1]);
+                    NoDistinctOverrides.SetValue(args[1], true);
                     break;
 
                 case "GetLastShopExpanded":
@@ -107,42 +107,6 @@ namespace ShopExpander
                     throw new ArgumentException(string.Format("Unknown command: {0}", command));
             }
             return null;
-        }
-
-        public int GetProvisionSize(object obj)
-        {
-            int provSize;
-            if (provisionOverrides.TryGetValue(obj, out provSize))
-                return provSize;
-            else
-                return 40;
-        }
-
-        public void SetProvisionSize(object obj, int prov)
-        {
-            provisionOverrides[obj] = prov;
-        }
-
-        public bool IsModifier(object obj)
-        {
-            return modifierOverrides.Contains(obj);
-        }
-
-        public void SetModifier(object obj)
-        {
-            if (!modifierOverrides.Contains(obj))
-                modifierOverrides.Add(obj);
-        }
-
-        public bool IsNoDistinct(object obj)
-        {
-            return noDistinctOverrides.Contains(obj);
-        }
-
-        public void SetNoDistinct(object obj)
-        {
-            if (!noDistinctOverrides.Contains(obj))
-                noDistinctOverrides.Add(obj);
         }
 
         private Texture2D CropTexture(Texture2D texture, Rectangle newBounds)

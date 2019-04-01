@@ -50,7 +50,7 @@ namespace ShopExpander.Patches
             }
             foreach (GlobalNPC globalNPC in arr)
             {
-                if (ShopExpander.Instance.IsModifier(globalNPC))
+                if (ShopExpander.Instance.ModifierOverrides.GetValue(globalNPC))
                 {
                     modifiers.Add(globalNPC);
                 }
@@ -81,7 +81,7 @@ namespace ShopExpander.Patches
 
         private static Chest ProvisionChest(ShoppingList list, object target)
         {
-            return MakeFakeChest(list.Provision(ShopExpander.Instance.GetProvisionSize(target), ShopExpander.Instance.IsNoDistinct(target)));
+            return MakeFakeChest(list.Provision(ShopExpander.Instance.ProvisionOverrides.GetValue(target), ShopExpander.Instance.NoDistinctOverrides.GetValue(target)));
         }
     }
 }
