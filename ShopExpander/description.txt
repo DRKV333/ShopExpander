@@ -6,5 +6,6 @@ For more game-play info visit the mod's home page.
 
 Changelog:
 
-v1.1
+v1.1.1
 - Better error handling and other bug fixes
+- Fixed overzealous duplicate remover
