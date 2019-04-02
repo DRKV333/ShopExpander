@@ -26,12 +26,12 @@ namespace ShopExpander
         {
             public bool Equals(Item x, Item y)
             {
-                return x.type == y.type;
+                return x.Name == y.Name && x.type == y.type;
             }
 
             public int GetHashCode(Item obj)
             {
-                return obj.type;
+                return obj.Name.GetHashCode() ^ obj.type;
             }
         }
 
