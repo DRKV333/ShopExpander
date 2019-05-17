@@ -118,7 +118,7 @@ namespace ShopExpander.Patches
                 modName = mod.DisplayName;
             string message = string.Format("Shop Expander failed to load {0} from mod {1}.", type, modName);
             Main.NewText(message, Color.Red);
-            Main.NewText("See log for more info. If this error persists, lease consider reporting it.", Color.Red);
+            Main.NewText("See log for more info. If this error persists, please consider reporting it to the author of the mod mentioned above.", Color.Red);
             ErrorLogger.Log("--- SHOP EXPANDER ERROR ---");
             ErrorLogger.Log(message);
             ErrorLogger.Log(e.ToString());
