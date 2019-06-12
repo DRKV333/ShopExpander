@@ -10,7 +10,7 @@ namespace ShopExpander.Patches
         [HarmonyPrefix]
         private static bool Prefix(Chest __instance, Item newItem)
         {
-            if (__instance != Main.instance.shop[Main.npcShop])
+            if (__instance != Main.instance.shop[Main.npcShop] || ShopExpander.Instance.LastShopExpanded == null)
                 return true;
 
             Item[] target = ShopExpander.Instance.LastShopExpanded.BuybackItems;

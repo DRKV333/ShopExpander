@@ -37,6 +37,9 @@ namespace ShopExpander.Patches
     {
         public static bool Prefix(Item[] inv, int context, int slot, bool skip)
         {
+            if (ShopExpander.Instance.LastShopExpanded == null)
+                return true;
+
             if (inv[slot].type == ShopExpander.Instance.ArrowLeft.item.type)
             {
                 if (context == 15)

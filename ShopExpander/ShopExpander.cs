@@ -110,6 +110,12 @@ namespace ShopExpander
             return null;
         }
 
+        public override void UpdateUI(GameTime gameTime)
+        {
+            if (Main.npcShop == 0)
+                LastShopExpanded = null;
+        }
+
         private Texture2D CropTexture(Texture2D texture, Rectangle newBounds)
         {
             Texture2D newTexture = new Texture2D(Main.graphics.GraphicsDevice, newBounds.Width, newBounds.Height);
