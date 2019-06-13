@@ -10,10 +10,8 @@ namespace ShopExpander.Patches
         [HarmonyPrefix]
         private static bool Prefix(Chest __instance, Item newItem)
         {
-            if (__instance != Main.instance.shop[Main.npcShop] || ShopExpander.Instance.LastShopExpanded == null)
+            if (__instance != Main.instance.shop[Main.npcShop] || ShopExpander.Instance.ActiveShop == null)
                 return true;
-
-            Item[] target = ShopExpander.Instance.LastShopExpanded.BuybackItems;
 
             Item insertItem = newItem.Clone();
             insertItem.favorited = false;
@@ -22,16 +20,8 @@ namespace ShopExpander.Patches
             if (insertItem.value < 1)
                 insertItem.value = 1;
 
-            for (int i = 0; i < target.Length; i++)
-            {
-                if (target[i].IsAir)
-                {
-                    target[i] = insertItem;
-                    break;
-                }
-            }
-
-            ShopExpander.Instance.LastShopExpanded.RefreshFrame();
+            ShopExpander.Instance.Buyback.AddItem(insertItem);
+            ShopExpander.Instance.ActiveShop.RefreshFrame();
 
             return false;
         }

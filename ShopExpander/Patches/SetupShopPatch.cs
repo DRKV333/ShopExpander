@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using Terraria;
 using Terraria.ModLoader;
+using ShopExpander.Providers;
 
 namespace ShopExpander.Patches
 {
@@ -32,8 +33,7 @@ namespace ShopExpander.Patches
         [HarmonyPrefix]
         private static bool Prefix(int type, Chest shop)
         {
-            ShoppingList list = new ShoppingList(ref shop.item);
-            ShopExpander.Instance.LastShopExpanded = list;
+            DynamicPageProvider dyn = new DynamicPageProvider(shop.item);
 
             List<GlobalNPC> modifiers = new List<GlobalNPC>();
 
@@ -49,7 +49,7 @@ namespace ShopExpander.Patches
                     try
                     {
                         int zero = 0;
-                        npc.SetupShop(ProvisionChest(list, npc), ref zero);
+                        npc.SetupShop(ProvisionChest(dyn, npc), ref zero);
                     }
                     catch (Exception e)
                     {
@@ -68,7 +68,7 @@ namespace ShopExpander.Patches
                     try
                     {
                         int zero = 0;
-                        globalNPC.SetupShop(type, ProvisionChest(list, globalNPC), ref zero);
+                        globalNPC.SetupShop(type, ProvisionChest(dyn, globalNPC), ref zero);
                     }
                     catch (Exception e)
                     {
@@ -77,20 +77,25 @@ namespace ShopExpander.Patches
                 }
             }
 
-            list.Compose();
+            dyn.Compose();
 
             foreach (var item in modifiers)
             {
                 try
                 {
-                    int max = list.ExtendedItems.Length;
-                    item.SetupShop(type, MakeFakeChest(list.ExtendedItems), ref max);
+                    int max = dyn.ExtendedItems.Length;
+                    item.SetupShop(type, MakeFakeChest(dyn.ExtendedItems), ref max);
                 }
                 catch (Exception e)
                 {
                     LogAndPrint("modifier GlobalNPC", item.mod, item, e);
                 }
             }
+
+            ShopExpander.Instance.ResetAndBindShop();
+            ShopExpander.Instance.ActiveShop.AddPage(dyn);
+            ShopExpander.Instance.ActiveShop.AddPage(ShopExpander.Instance.Buyback);
+            ShopExpander.Instance.ActiveShop.RefreshFrame();
 
             return false;
         }
@@ -102,9 +107,9 @@ namespace ShopExpander.Patches
             return fake;
         }
 
-        private static Chest ProvisionChest(ShoppingList list, object target)
+        private static Chest ProvisionChest(DynamicPageProvider dyn, object target)
         {
-            return MakeFakeChest(list.Provision(ShopExpander.Instance.ProvisionOverrides.GetValue(target), ShopExpander.Instance.NoDistinctOverrides.GetValue(target)));
+            return MakeFakeChest(dyn.Provision(ShopExpander.Instance.ProvisionOverrides.GetValue(target), ShopExpander.Instance.NoDistinctOverrides.GetValue(target), ShopExpander.Instance.VanillaCopyOverrrides.GetValue(target)));
         }
 
         private static void LogAndPrint(string type, Mod mod, object obj, Exception e)

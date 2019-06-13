@@ -3,8 +3,10 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Terraria;
 using Terraria.ModLoader;
+using ShopExpander.Providers;
 
 namespace ShopExpander
 {
@@ -15,7 +17,8 @@ namespace ShopExpander
         public ModItem ArrowLeft { get; private set; }
         public ModItem ArrowRight { get; private set; }
 
-        public ShoppingList LastShopExpanded { get; set; }
+        public ShopAggregator ActiveShop { get; private set; }
+        public readonly CircularBufferProvider Buyback = new CircularBufferProvider("Buyback");
 
         private HarmonyInstance harmonyInstance;
 
@@ -23,12 +26,19 @@ namespace ShopExpander
         public readonly LazyObjectConfig<bool> ModifierOverrides = new LazyObjectConfig<bool>(false);
         public readonly LazyObjectConfig<bool> NoDistinctOverrides = new LazyObjectConfig<bool>(false);
         public readonly LazyObjectConfig<bool> IgnoreErrors = new LazyObjectConfig<bool>(false);
+        public readonly LazyObjectConfig<bool> VanillaCopyOverrrides = new LazyObjectConfig<bool>(true);
 
         private bool textureSetupDone = false;
 
         public ShopExpander()
         {
             Properties = new ModProperties { Autoload = false };
+        }
+
+        public void ResetAndBindShop()
+        {
+            ActiveShop = new ShopAggregator();
+            Main.instance.shop[Main.npcShop].item = ActiveShop.CurrentFrame;
         }
 
         public override void Load()
@@ -101,8 +111,8 @@ namespace ShopExpander
                     break;
 
                 case "GetLastShopExpanded":
-                    if (LastShopExpanded != null)
-                        return LastShopExpanded.ExtendedItems;
+                    if (ActiveShop != null)
+                        return ActiveShop.GetAllItems().ToArray();
                     break;
 
                 default:
@@ -114,7 +124,7 @@ namespace ShopExpander
         public override void UpdateUI(GameTime gameTime)
         {
             if (Main.npcShop == 0)
-                LastShopExpanded = null;
+                ActiveShop = null;
         }
 
         private Texture2D CropTexture(Texture2D texture, Rectangle newBounds)
