@@ -66,7 +66,8 @@ namespace ShopExpander
         public override void Unload()
         {
             Patches.SetupShopPatch.Unload();
-            harmonyInstance.UnpatchAll();
+            if (harmonyInstance != null)
+                harmonyInstance.UnpatchAll();
 
             if (textureSetupDone)
             {
