@@ -18,7 +18,7 @@ namespace ShopExpander
         public ModItem ArrowRight { get; private set; }
 
         public ShopAggregator ActiveShop { get; private set; }
-        public readonly CircularBufferProvider Buyback = new CircularBufferProvider("Buyback");
+        public readonly CircularBufferProvider Buyback = new CircularBufferProvider("Buyback", ProviderPriority.Buyback);
 
         private HarmonyInstance harmonyInstance;
 
@@ -38,6 +38,7 @@ namespace ShopExpander
         public void ResetAndBindShop()
         {
             ActiveShop = new ShopAggregator();
+            ActiveShop.AddPage(Buyback);
             Main.instance.shop[Main.npcShop].item = ActiveShop.CurrentFrame;
         }
 

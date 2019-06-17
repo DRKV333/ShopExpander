@@ -33,7 +33,7 @@ namespace ShopExpander.Patches
         [HarmonyPrefix]
         private static bool Prefix(int type, Chest shop)
         {
-            DynamicPageProvider dyn = new DynamicPageProvider(shop.item);
+            DynamicPageProvider dyn = new DynamicPageProvider(shop.item, null, ProviderPriority.Vanilla);
 
             List<GlobalNPC> modifiers = new List<GlobalNPC>();
 
@@ -94,7 +94,6 @@ namespace ShopExpander.Patches
 
             ShopExpander.Instance.ResetAndBindShop();
             ShopExpander.Instance.ActiveShop.AddPage(dyn);
-            ShopExpander.Instance.ActiveShop.AddPage(ShopExpander.Instance.Buyback);
             ShopExpander.Instance.ActiveShop.RefreshFrame();
 
             return false;

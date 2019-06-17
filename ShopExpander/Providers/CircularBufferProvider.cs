@@ -9,17 +9,18 @@ namespace ShopExpander.Providers
 {
     public class CircularBufferProvider : IShopPageProvider
     {
-        private readonly string name;
         private readonly Item[] items = new Item[ShopAggregator.FrameCapacity];
         private int nextSlot = 0;
         bool show = false;
 
-        public string Name { get { return name; } }
+        public string Name { get; set; }
+        public int Priority { get; set; }
         public int NumPages { get { return show ? 1 : 0; } }
 
-        public CircularBufferProvider(string name)
+        public CircularBufferProvider(string name, int priority)
         {
-            this.name = name;
+            Name = name;
+            Priority = priority;
             for (int i = 0; i < items.Length; i++)
             {
                 items[i] = new Item();

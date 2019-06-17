@@ -30,6 +30,7 @@ namespace ShopExpander
         public void AddPage(IShopPageProvider pageProvider)
         {
             pageProviders.Add(pageProvider);
+            pageProviders.Sort((x, y) => x.Priority - y.Priority);
         }
 
         public void RefreshFrame()

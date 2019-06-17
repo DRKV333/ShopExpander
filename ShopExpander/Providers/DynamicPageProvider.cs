@@ -38,7 +38,8 @@ namespace ShopExpander.Providers
             }
         }
 
-        public string Name { get { return null; } }
+        public string Name { get; set; }
+        public int Priority { get; set; }
 
         public int NumPages { get; private set; }
         public Item[] ExtendedItems { get; private set; }
@@ -47,8 +48,12 @@ namespace ShopExpander.Providers
         private readonly Item[] vanillaShop;
         private readonly Item[] vanillaShopCopy;
 
-        public DynamicPageProvider(Item[] vanillaShop)
+        public DynamicPageProvider(string name, int priority) : this(new Item[0], name, priority) { }
+
+        public DynamicPageProvider(Item[] vanillaShop, string name, int priority)
         {
+            Name = name;
+            Priority = priority;
             this.vanillaShop = vanillaShop;
             vanillaShopCopy = vanillaShop.Where(x => !x.IsAir).Select(x => x.Clone()).ToArray();
             ExtendedItems = new Item[0];

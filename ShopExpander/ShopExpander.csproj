@@ -71,6 +71,7 @@
     <Compile Include="Patches\LeftRightClickPatch.cs" />
     <Compile Include="Patches\SetupShopPatch.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Providers\ProviderPriority.cs" />
     <Compile Include="ShopAggregator.cs" />
     <Compile Include="ShopExpander.cs" />
   </ItemGroup>
