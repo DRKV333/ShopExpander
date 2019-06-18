@@ -63,6 +63,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ArrowItem.cs" />
+    <Compile Include="Patches\SetupShopNoDiscountPatch.cs" />
     <Compile Include="Providers\CircularBufferProvider.cs" />
     <Compile Include="Providers\DynamicPageProvider.cs" />
     <Compile Include="Providers\IShopPageProvider.cs" />

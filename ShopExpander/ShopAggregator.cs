@@ -67,10 +67,18 @@ namespace ShopExpander
             int itemNum = 0;
             foreach (var item in pageProviders[providerIndex].GetPage(providerPageNum))
             {
-                CurrentFrame[itemNum + 1] = item;
+                CurrentFrame[itemNum + 1] = item.Clone();
                 itemNum++;
                 if (itemNum > FrameCapacity)
                     break;
+            }
+
+            if (Main.LocalPlayer.discount)
+            {
+                for (int i = 1; i < itemNum; i++)
+                {
+                    CurrentFrame[i].value = (int)(CurrentFrame[i].value * 0.8f);
+                }
             }
 
             for (int i = itemNum; i < FrameCapacity; i++)
