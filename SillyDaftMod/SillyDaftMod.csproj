@@ -64,6 +64,12 @@
     <Compile Include="SillyDaftGlobalNpc.cs" />
     <Compile Include="SillyDaftMod.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ShopExpander\ShopExpander.csproj">
+      <Project>{4d3fa2f6-444c-4c70-8430-80a8071a0141}</Project>
+      <Name>ShopExpander</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(ProjectDir)..\tmodloader.targets" />
 </Project>
