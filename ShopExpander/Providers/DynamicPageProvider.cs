@@ -7,7 +7,7 @@ using Terraria;
 
 namespace ShopExpander.Providers
 {
-    public class DynamicPageProvider : IShopPageProvider
+    public class DynamicPageProvider : ArrayProvider
     {
         private struct ProvisionedSegment
         {
@@ -38,39 +38,17 @@ namespace ShopExpander.Providers
             }
         }
 
-        public string Name { get; set; }
-        public int Priority { get; set; }
-
-        public int NumPages { get; private set; }
-        public Item[] ExtendedItems { get; private set; }
-
         private readonly List<ProvisionedSegment> provisions = new List<ProvisionedSegment>();
         private readonly Item[] vanillaShop;
         private readonly Item[] vanillaShopCopy;
 
         public DynamicPageProvider(string name, int priority) : this(new Item[0], name, priority) { }
 
-        public DynamicPageProvider(Item[] vanillaShop, string name, int priority)
+        public DynamicPageProvider(Item[] vanillaShop, string name, int priority) : base(name, priority, new Item[0])
         {
-            Name = name;
-            Priority = priority;
             this.vanillaShop = vanillaShop;
             vanillaShopCopy = vanillaShop.Where(x => !x.IsAir).Select(x => x.Clone()).ToArray();
-            ExtendedItems = new Item[0];
             FixNumPages();
-        }
-
-        public IEnumerable<Item> GetPage(int pageNum)
-        {
-            int offset = pageNum * 38;
-
-            for (int i = 0; i < ShopAggregator.FrameCapacity; i++)
-            {
-                int sourceIndex = i + offset;
-                if (sourceIndex >= ExtendedItems.Length)
-                    yield break;
-                yield return ExtendedItems[sourceIndex];
-            }
         }
 
         public Item[] Provision(int capacity, bool noDistinct, bool vanillaCopy)
@@ -102,14 +80,6 @@ namespace ShopExpander.Providers
 
             FixNumPages();
             provisions.Clear();
-        }
-
-        private void FixNumPages()
-        {
-            if (ExtendedItems.Length > 0)
-                NumPages = (ExtendedItems.Length - 1) / ShopAggregator.FrameCapacity + 1;
-            else
-                NumPages = 0;
         }
     }
 }

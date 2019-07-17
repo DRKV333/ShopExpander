@@ -115,6 +115,16 @@ namespace ShopExpander
                     VanillaCopyOverrrides.SetValue(args[1], false);
                     break;
 
+                case "AddPageFromArray":
+                    if (!(args[2] is int))
+                        throw new ArgumentException("Third argument must be int");
+                    if (!(args[3] is Item[]))
+                        throw new ArgumentException("Fourth argument must be Item[]");
+                    if (ActiveShop == null)
+                        throw new InvalidOperationException("No active shop, call \"ResetAndBindShop\" first");
+                    ActiveShop.AddPage(new ArrayProvider(args[1] as string, (int)args[2], (Item[])args[3]));
+                    break;
+
                 case "ResetAndBindShop":
                     ResetAndBindShop();
                     break;
