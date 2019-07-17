@@ -111,6 +111,14 @@ namespace ShopExpander
                     NoDistinctOverrides.SetValue(args[1], true);
                     break;
 
+                case "SetVanillaNoCopy":
+                    VanillaCopyOverrrides.SetValue(args[1], false);
+                    break;
+
+                case "ResetAndBindShop":
+                    ResetAndBindShop();
+                    break;
+
                 case "GetLastShopExpanded":
                     if (ActiveShop != null)
                         return ActiveShop.GetAllItems().ToArray();
