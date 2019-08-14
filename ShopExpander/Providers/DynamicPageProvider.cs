@@ -65,6 +65,11 @@ namespace ShopExpander.Providers
             return items.items;
         }
 
+        public void UnProvision(Item[] items)
+        {
+            provisions.RemoveAll(x => x.items == items);
+        }
+
         public void Compose()
         {
             ExtendedItems = ExtendedItems.Concat(

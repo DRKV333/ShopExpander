@@ -16,6 +16,8 @@ namespace ShopExpander.Patches
         private static GlobalNPC[] arr;
         private static int[] shopToNpcs;
 
+        private const int maxProvisionTries = 3;
+
         //I had trouble getting HarmonyPrepare to work
         public static void Load()
         {
@@ -33,8 +35,8 @@ namespace ShopExpander.Patches
         [HarmonyPrefix]
         private static bool Prefix(int type, Chest shop)
         {
+            ShopExpander.Instance.ResetAndBindShop();
             DynamicPageProvider dyn = new DynamicPageProvider(shop.item, null, ProviderPriority.Vanilla);
-
             List<GlobalNPC> modifiers = new List<GlobalNPC>();
 
             if (type < shopToNpcs.Length)
@@ -46,17 +48,14 @@ namespace ShopExpander.Patches
                 ModNPC npc = NPCLoader.GetNPC(type);
                 if (npc != null)
                 {
-                    try
+                    DoSetupFor(dyn, "ModNPC", npc.mod, npc, delegate (Chest c)
                     {
                         int zero = 0;
-                        npc.SetupShop(ProvisionChest(dyn, npc), ref zero);
-                    }
-                    catch (Exception e)
-                    {
-                        LogAndPrint("ModNPC", npc.mod, npc, e);
-                    }
+                        npc.SetupShop(c, ref zero);
+                    });
                 }
             }
+
             foreach (GlobalNPC globalNPC in arr)
             {
                 if (ShopExpander.Instance.ModifierOverrides.GetValue(globalNPC))
@@ -65,15 +64,11 @@ namespace ShopExpander.Patches
                 }
                 else
                 {
-                    try
+                    DoSetupFor(dyn, "GloabalNPC", globalNPC.mod, globalNPC, delegate (Chest c)
                     {
                         int zero = 0;
-                        globalNPC.SetupShop(type, ProvisionChest(dyn, globalNPC), ref zero);
-                    }
-                    catch (Exception e)
-                    {
-                        LogAndPrint("GlobalNPC", globalNPC.mod, globalNPC, e);
-                    }
+                        globalNPC.SetupShop(type, c, ref zero);
+                    });
                 }
             }
 
@@ -92,11 +87,56 @@ namespace ShopExpander.Patches
                 }
             }
 
-            ShopExpander.Instance.ResetAndBindShop();
             ShopExpander.Instance.ActiveShop.AddPage(dyn);
             ShopExpander.Instance.ActiveShop.RefreshFrame();
 
             return false;
+        }
+
+        private static void DoSetupFor(DynamicPageProvider mainDyn, string typeText, Mod mod, object obj, Action<Chest> setup)
+        {
+            try
+            {
+                DoSetupSingle(mainDyn, obj, setup);
+            }
+            catch (Exception e)
+            {
+                LogAndPrint(typeText, mod, obj, e);
+            }
+        }
+
+        private static void DoSetupSingle(DynamicPageProvider dyn, object obj, Action<Chest> setup)
+        {
+            int sizeToTry = ShopExpander.Instance.ProvisionOverrides.GetValue(obj);
+            int numMoreTries = maxProvisionTries;
+            List<Exception> exceptions = new List<Exception>(maxProvisionTries);
+
+            bool retry = true;
+            while (retry)
+            {
+                retry = false;
+                Chest provision = null;
+                try
+                {
+                    provision = ProvisionChest(dyn, obj, sizeToTry);
+                    setup(provision);
+                }
+                catch (IndexOutOfRangeException e)
+                {
+                    exceptions.Add(e);
+                    if (--numMoreTries > 0)
+                    {
+                        retry = true;
+                        if (provision != null)
+                            dyn.UnProvision(provision.item);
+                        sizeToTry *= 2;
+                    }
+                    else
+                    {
+                        throw new AggregateException("Failed setup after trying with " + sizeToTry + " slots", exceptions);
+                    }
+                }
+            }
         }
 
         private static Chest MakeFakeChest(Item[] items)
@@ -106,9 +146,9 @@ namespace ShopExpander.Patches
             return fake;
         }
 
-        private static Chest ProvisionChest(DynamicPageProvider dyn, object target)
+        private static Chest ProvisionChest(DynamicPageProvider dyn, object target, int size)
         {
-            return MakeFakeChest(dyn.Provision(ShopExpander.Instance.ProvisionOverrides.GetValue(target), ShopExpander.Instance.NoDistinctOverrides.GetValue(target), ShopExpander.Instance.VanillaCopyOverrrides.GetValue(target)));
+            return MakeFakeChest(dyn.Provision(size, ShopExpander.Instance.NoDistinctOverrides.GetValue(target), ShopExpander.Instance.VanillaCopyOverrrides.GetValue(target)));
         }
 
         private static void LogAndPrint(string type, Mod mod, object obj, Exception e)
