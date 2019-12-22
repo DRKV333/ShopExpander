@@ -12,6 +12,18 @@ namespace ShopExpander
 {
     public class ShopExpander : Mod
     {
+        public static class CallApi
+        {
+            public const string SetProvisionSize = "SetProvisionSize";
+            public const string SetModifier = "SetModifier";
+            public const string SetNoDistinct = "SetNoDistinct";
+            public const string SetVanillaNoCopy = "SetVanillaNoCopy";
+            public const string AddLegacyMultipageSetupMethods = "AddLegacyMultipageSetupMethods";
+            public const string AddPageFromArray = "AddPageFromArray";
+            public const string ResetAndBindShop = "ResetAndBindShop";
+            public const string GetLastShopExpanded = "GetLastShopExpanded";
+        }
+
         public static ShopExpander Instance { get; private set; }
 
         public ModItem ArrowLeft { get; private set; }
@@ -27,6 +39,7 @@ namespace ShopExpander
         public readonly LazyObjectConfig<bool> NoDistinctOverrides = new LazyObjectConfig<bool>(false);
         public readonly LazyObjectConfig<bool> IgnoreErrors = new LazyObjectConfig<bool>(false);
         public readonly LazyObjectConfig<bool> VanillaCopyOverrrides = new LazyObjectConfig<bool>(true);
+        public readonly LazyObjectConfig<(string name, int priority, Action setup)[]> LegacyMultipageSetupMethods = new LazyObjectConfig<(string, int, Action)[]>();
 
         private bool textureSetupDone = false;
 
@@ -88,56 +101,77 @@ namespace ShopExpander
 
             Instance = null;
         }
-
+        
         public override object Call(params object[] args)
         {
             string command = args[0] as string;
             if (command == null)
-                throw new ArgumentException("First argument must be string");
+                throw new ArgumentException("first argument must be string");
 
             switch (command)
             {
-                case "SetProvisionSize":
-                    if (!(args[2] is int))
-                        throw new ArgumentException("Third argument must be int for SetProvisionSize");
-                    ProvisionOverrides.SetValue(args[1], (int)args[2]);
+                case CallApi.SetProvisionSize:
+                    ProvisionOverrides.SetValue(args[1], AssertAndCast<int>(args, 2, CallApi.SetProvisionSize));
                     break;
 
-                case "SetModifier":
+                case CallApi.SetModifier:
                     ModifierOverrides.SetValue(args[1], true);
                     break;
 
-                case "SetNoDistinct":
+                case CallApi.SetNoDistinct:
                     NoDistinctOverrides.SetValue(args[1], true);
                     break;
 
-                case "SetVanillaNoCopy":
+                case CallApi.SetVanillaNoCopy:
                     VanillaCopyOverrrides.SetValue(args[1], false);
                     break;
 
-                case "AddPageFromArray":
-                    if (!(args[2] is int))
-                        throw new ArgumentException("Third argument must be int");
-                    if (!(args[3] is Item[]))
-                        throw new ArgumentException("Fourth argument must be Item[]");
-                    if (ActiveShop == null)
-                        throw new InvalidOperationException("No active shop, call \"ResetAndBindShop\" first");
-                    ActiveShop.AddPage(new ArrayProvider(args[1] as string, (int)args[2], (Item[])args[3]));
+                case CallApi.AddLegacyMultipageSetupMethods:
+                    if (args.Length % 3 != 2)
+                        throw new ArgumentException("The number of arguments is incorrect (args.Length % 3 != 1) for " + CallApi.AddLegacyMultipageSetupMethods);
+
+                    var methods = new (string name, int priority, Action setup)[args.Length / 3]; 
+                    for (int i = 0; i < methods.Length; i++)
+                    {
+                        int offset = i * 3 + 2;
+                        methods[i].name = AssertAndCast<string>(args, offset, CallApi.AddLegacyMultipageSetupMethods);
+                        methods[i].priority = AssertAndCast<int>(args, offset + 1, CallApi.AddLegacyMultipageSetupMethods);
+                        methods[i].setup = AssertAndCast<Action>(args, offset + 2, CallApi.AddLegacyMultipageSetupMethods);
+                    }
+
+                    LegacyMultipageSetupMethods.SetValue(args[1], methods);
                     break;
 
-                case "ResetAndBindShop":
+                case CallApi.AddPageFromArray:
+                    if (ActiveShop == null)
+                        throw new InvalidOperationException($"No active shop, try calling {CallApi.ResetAndBindShop} first");
+                    ActiveShop.AddPage(new ArrayProvider(AssertAndCast<string>(args, 1, CallApi.AddPageFromArray),
+                                                         AssertAndCast<int>(args, 2, CallApi.AddPageFromArray), 
+                                                         AssertAndCast<Item[]>(args, 3, CallApi.AddPageFromArray)));
+                    break;
+
+                case CallApi.ResetAndBindShop:
                     ResetAndBindShop();
                     break;
 
-                case "GetLastShopExpanded":
+                case CallApi.GetLastShopExpanded:
                     if (ActiveShop != null)
                         return ActiveShop.GetAllItems().ToArray();
                     break;
 
                 default:
-                    throw new ArgumentException(string.Format("Unknown command: {0}", command));
+                    throw new ArgumentException($"Unknown command: {command}");
             }
             return null;
+        }
+
+        private T AssertAndCast<T>(object[] args, int index, string site, bool checkForNull = false)
+        {
+            if (checkForNull && args[index] == null)
+                throw new ArgumentNullException($"args[{index}] cannot be null for {site}");
+            if (!(args[index] is T casted))
+                throw new ArgumentException($"args[{index}] must be {typeof(T).Name} for {site}");
+            return casted;
         }
 
         public override void UpdateUI(GameTime gameTime)

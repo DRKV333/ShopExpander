@@ -48,7 +48,7 @@ namespace ShopExpander.Patches
                 ModNPC npc = NPCLoader.GetNPC(type);
                 if (npc != null)
                 {
-                    DoSetupFor(dyn, "ModNPC", npc.mod, npc, delegate (Chest c)
+                    DoSetupFor(shop, dyn, "ModNPC", npc.mod, npc, delegate (Chest c)
                     {
                         int zero = 0;
                         npc.SetupShop(c, ref zero);
@@ -64,7 +64,7 @@ namespace ShopExpander.Patches
                 }
                 else
                 {
-                    DoSetupFor(dyn, "GloabalNPC", globalNPC.mod, globalNPC, delegate (Chest c)
+                    DoSetupFor(shop, dyn, "GloabalNPC", globalNPC.mod, globalNPC, delegate (Chest c)
                     {
                         int zero = 0;
                         globalNPC.SetupShop(type, c, ref zero);
@@ -93,11 +93,26 @@ namespace ShopExpander.Patches
             return false;
         }
 
-        private static void DoSetupFor(DynamicPageProvider mainDyn, string typeText, Mod mod, object obj, Action<Chest> setup)
+        private static void DoSetupFor(Chest shop, DynamicPageProvider mainDyn, string typeText, Mod mod, object obj, Action<Chest> setup)
         {
             try
             {
-                DoSetupSingle(mainDyn, obj, setup);
+                var methods = ShopExpander.Instance.LegacyMultipageSetupMethods.GetValue(obj);
+                if (methods != null)
+                {
+                    foreach (var item in methods)
+                    {
+                        DynamicPageProvider dynPage = new DynamicPageProvider(shop.item, item.name, item.priority);
+                        ShopExpander.Instance.ActiveShop.AddPage(dynPage);
+                        item.setup?.Invoke();
+                        DoSetupSingle(dynPage, obj, setup);
+                        dynPage.Compose();
+                    }
+                }
+                else
+                {
+                    DoSetupSingle(mainDyn, obj, setup);
+                }
             }
             catch (Exception e)
             {
