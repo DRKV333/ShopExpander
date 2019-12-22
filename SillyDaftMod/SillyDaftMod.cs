@@ -14,10 +14,10 @@ namespace SillyDaftMod
             Mod shopExpander = ModLoader.GetMod("ShopExpander");
             if (shopExpander != null)
             {
-                shopExpander.Call("SetProvisionSize", GetGlobalNPC<SillyDaftGlobalNpc>(), ItemLoader.ItemCount * 2);
+                shopExpander.Call("SetProvisionSize", ModContent.GetInstance<SillyDaftGlobalNpc>(), ItemLoader.ItemCount * 2);
                 //shopExpander.Call("SetNoDistinct", GetGlobalNPC<SillyDaftGlobalNpc>());
 
-                shopExpander.Call("SetModifier", GetGlobalNPC<FreeloadGlobalNpc>());
+                shopExpander.Call("SetModifier", ModContent.GetInstance<FreeloadGlobalNpc>());
             }
         }
     }
