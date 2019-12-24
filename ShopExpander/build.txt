@@ -2,7 +2,6 @@ author = DRKV
 version = 1.1.2
 displayName = Shop Expander
 includePDB = false
-dllReferences = 0Harmony
 buildIgnore = .gitignore, .gitattributes, *.csproj*, *.sln, *.targets, .git/*, .vs/*, bin/*, obj/*, *.xcf, lib/ReLogic.dll, Properties/launchSettings.json
 hideCode = false
 hideResources = false

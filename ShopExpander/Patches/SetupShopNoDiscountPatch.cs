@@ -1,31 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Reflection.Emit;
-using System.Reflection;
+﻿using Mono.Cecil.Cil;
+using MonoMod.Cil;
 using Terraria;
-using Harmony;
 
 namespace ShopExpander.Patches
 {
-    [HarmonyPatch(typeof(Chest), "SetupShop")]
-    [HarmonyPriority(Priority.Normal)]
     internal static class SetupShopNoDiscountPatch
     {
-        [HarmonyTranspiler]
-        private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> original)
+        public static void Load()
         {
-            foreach (var item in original)
-            {
-                yield return item;
+            IL.Terraria.Chest.SetupShop += Transpiler;
+        }
 
-                if (item.opcode == OpCodes.Ldfld && ((FieldInfo)item.operand).Name == "discount")
-                {
-                    yield return new CodeInstruction(OpCodes.Pop);
-                    yield return new CodeInstruction(OpCodes.Ldc_I4_0);
-                }
+        private static void Transpiler(ILContext il)
+        {
+            ILCursor cursor = new ILCursor(il);
+
+            while (cursor.TryGotoNext(MoveType.After, x => x.MatchLdfld<Player>("discount")))
+            {
+                cursor.Emit(OpCodes.Pop);
+                cursor.Emit(OpCodes.Ldc_I4_0);
             }
         }
     }

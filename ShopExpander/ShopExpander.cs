@@ -1,5 +1,4 @@
-﻿using Harmony;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
@@ -7,6 +6,7 @@ using System.Linq;
 using Terraria;
 using Terraria.ModLoader;
 using ShopExpander.Providers;
+using ShopExpander.Patches;
 
 namespace ShopExpander
 {
@@ -31,8 +31,6 @@ namespace ShopExpander
 
         public ShopAggregator ActiveShop { get; private set; }
         public readonly CircularBufferProvider Buyback = new CircularBufferProvider("Buyback", ProviderPriority.Buyback);
-
-        private HarmonyInstance harmonyInstance;
 
         public readonly LazyObjectConfig<int> ProvisionOverrides = new LazyObjectConfig<int>(40);
         public readonly LazyObjectConfig<bool> ModifierOverrides = new LazyObjectConfig<bool>(false);
@@ -60,8 +58,6 @@ namespace ShopExpander
             if (Instance != null)
                 throw new InvalidOperationException("An instance of ShopExpander is already loaded.");
 
-            harmonyInstance = HarmonyInstance.Create(Name);
-
             ArrowLeft = new ArrowItem();
             AddItem("ArrowLeft", ArrowLeft);
 
@@ -73,8 +69,10 @@ namespace ShopExpander
 
         public override void PostSetupContent()
         {
-            Patches.SetupShopPatch.Load();
-            harmonyInstance.PatchAll();
+            SetupShopPatch.Load();
+            AddShopPatch.Load();
+            SetupShopNoDiscountPatch.Load();
+            LeftRightClickPatch.Load();
 
             ArrowLeft.DisplayName.SetDefault("Previous page");
             ArrowRight.DisplayName.SetDefault("Next page");
@@ -90,8 +88,6 @@ namespace ShopExpander
         public override void Unload()
         {
             Patches.SetupShopPatch.Unload();
-            if (harmonyInstance != null)
-                harmonyInstance.UnpatchAll();
 
             if (textureSetupDone)
             {

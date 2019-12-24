@@ -1,41 +1,35 @@
-﻿using Harmony;
-using Terraria;
-using Terraria.UI;
+﻿using Terraria;
 
 namespace ShopExpander.Patches
 {
-    [HarmonyPatch(typeof(ItemSlot), "LeftClick", typeof(Item[]), typeof(int), typeof(int))]
-    [HarmonyPriority(Priority.Normal)]
-    internal static class LeftClickPatch
+    internal static class LeftRightClickPatch
     {
-        [HarmonyPrefix]
-        private static bool Prefix(Item[] inv, int context, int slot)
+        public static void Load()
         {
-            return ClickHelper.Prefix(inv, context, slot, false);
+            On.Terraria.UI.ItemSlot.LeftClick_ItemArray_int_int += PrefixLeft;
+            On.Terraria.UI.ItemSlot.RightClick_ItemArray_int_int += PrefixRight;
         }
-    }
 
-    [HarmonyPatch(typeof(ItemSlot), "RightClick", typeof(Item[]), typeof(int), typeof(int))]
-    [HarmonyPriority(Priority.Normal)]
-    internal static class RightClickPatch
-    {
-        [HarmonyPrefix]
-        private static bool Prefix(Item[] inv, int context, int slot)
+        private static void PrefixLeft(On.Terraria.UI.ItemSlot.orig_LeftClick_ItemArray_int_int orig, Item[] inv, int context, int slot)
+        {
+            if (Prefix(inv, context, slot, false))
+                orig(inv, context, slot);
+        }
+
+        private static void PrefixRight(On.Terraria.UI.ItemSlot.orig_RightClick_ItemArray_int_int orig, Item[] inv, int context, int slot)
         {
             if (Main.mouseRight)
             {
-                return ClickHelper.Prefix(inv, context, slot, true);
+                if (Prefix(inv, context, slot, true))
+                    orig(inv, context, slot);
             }
             else
             {
-                return true;
+                orig(inv, context, slot);
             }
         }
-    }
 
-    internal static class ClickHelper
-    {
-        public static bool Prefix(Item[] inv, int context, int slot, bool skip)
+        private static bool Prefix(Item[] inv, int context, int slot, bool skip)
         {
             if (ShopExpander.Instance.ActiveShop == null)
                 return true;

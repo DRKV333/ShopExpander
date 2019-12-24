@@ -1,29 +1,32 @@
-﻿using Harmony;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
+using MonoMod.RuntimeDetour.HookGen;
+using ShopExpander.Providers;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Terraria;
 using Terraria.ModLoader;
-using ShopExpander.Providers;
 
 namespace ShopExpander.Patches
 {
-    [HarmonyPatch(typeof(NPCLoader), "SetupShop")]
-    [HarmonyPriority(Priority.Low)]
     internal static class SetupShopPatch
     {
+        private delegate void orig_SetupShop(int type, Chest shop, ref int nextSlot);
+
+        private delegate void hook_SetupShop(orig_SetupShop orig, int type, Chest shop, ref int nextSlot);
+
         private static GlobalNPC[] arr;
         private static int[] shopToNpcs;
 
         private const int maxProvisionTries = 3;
 
-        //I had trouble getting HarmonyPrepare to work
         public static void Load()
         {
             object hooklist = typeof(NPCLoader).GetField("HookSetupShop", BindingFlags.NonPublic | BindingFlags.Static).GetValue(null);
             arr = (GlobalNPC[])hooklist.GetType().GetField("arr", BindingFlags.Public | BindingFlags.Instance).GetValue(hooklist);
             shopToNpcs = (int[])typeof(NPCLoader).GetField("shopToNPC", BindingFlags.NonPublic | BindingFlags.Static).GetValue(null);
+
+            HookEndpointManager.Add(typeof(NPCLoader).GetMethod("SetupShop", BindingFlags.Public | BindingFlags.Static), (hook_SetupShop)Prefix);
         }
 
         public static void Unload()
@@ -32,8 +35,7 @@ namespace ShopExpander.Patches
             shopToNpcs = null;
         }
 
-        [HarmonyPrefix]
-        private static bool Prefix(int type, Chest shop)
+        private static void Prefix(orig_SetupShop orig, int type, Chest shop, ref int nextSlot)
         {
             ShopExpander.Instance.ResetAndBindShop();
             DynamicPageProvider dyn = new DynamicPageProvider(shop.item, null, ProviderPriority.Vanilla);
@@ -89,8 +91,6 @@ namespace ShopExpander.Patches
 
             ShopExpander.Instance.ActiveShop.AddPage(dyn);
             ShopExpander.Instance.ActiveShop.RefreshFrame();
-
-            return false;
         }
 
         private static void DoSetupFor(Chest shop, DynamicPageProvider mainDyn, string typeText, Mod mod, object obj, Action<Chest> setup)

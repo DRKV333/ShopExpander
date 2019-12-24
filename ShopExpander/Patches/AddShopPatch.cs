@@ -1,17 +1,18 @@
-﻿using Harmony;
-using Terraria;
+﻿using Terraria;
 
 namespace ShopExpander.Patches
 {
-    [HarmonyPatch(typeof(Chest), "AddShop")]
-    [HarmonyPriority(Priority.Normal)]
     internal static class AddShopPatch
     {
-        [HarmonyPrefix]
-        private static bool Prefix(Chest __instance, Item newItem)
+        public static void Load()
         {
-            if (__instance != Main.instance.shop[Main.npcShop] || ShopExpander.Instance.ActiveShop == null)
-                return true;
+            On.Terraria.Chest.AddShop += Prefix;
+        }
+
+        private static int Prefix(On.Terraria.Chest.orig_AddShop orig, Chest self, Item newItem)
+        {
+            if (self != Main.instance.shop[Main.npcShop] || ShopExpander.Instance.ActiveShop == null)
+                return orig(self, newItem);
 
             Item insertItem = newItem.Clone();
             insertItem.favorited = false;
@@ -23,7 +24,7 @@ namespace ShopExpander.Patches
             ShopExpander.Instance.Buyback.AddItem(insertItem);
             ShopExpander.Instance.ActiveShop.RefreshFrame();
 
-            return false;
+            return 0; //TODO: Fix PostSellItem hook
         }
     }
 }
