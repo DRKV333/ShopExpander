@@ -1,4 +1,8 @@
-﻿# Shop Expander
+﻿# This repo is outdated!
+
+The mod is currently maintained by [@ExterminatorX99](https://github.com/ExterminatorX99), see the latest version here: https://github.com/ExterminatorX99/ShopExpander
+
+# Shop Expander
 
 Shop expander aims to solve a problem encountered by many players using multiple large mods. Town NPCs have a limited amount of free shop inventory space. When multiple different mods add items to a single vanilla NPC's shop, it can overflow, causing any additional items to not show up. The issue is further compounded by the fact that some items might be added to the same shop by multiple different mods, resulting in wasted slots.
 
